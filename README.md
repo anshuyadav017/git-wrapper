@@ -106,7 +106,7 @@ A powerful REST API that takes any GitHub username and generates a comprehensive
    Edit `.env` file:
    ```env
    PORT=3000
-   GITHUB_TOKEN=your_github_token_here
+   TOKEN=your_github_token_here
    GEMINI_API_KEY=your_gemini_api_key_here
    NODE_ENV=development
    CACHE_TTL=300
@@ -212,7 +212,7 @@ curl -o compare.png http://localhost:3000/compare/torvalds/gaearon
 |----------|---------|-------------|
 | `PORT` | 3000 | Server port |
 | `NODE_ENV` | development | Environment mode |
-| `GITHUB_TOKEN` | - | GitHub API token (optional, for higher rate limits) |
+| `TOKEN` | - | GitHub API token (optional, for higher rate limits) |
 | `GEMINI_API_KEY` | - | Gemini API key for AI roasts (optional, falls back to random roasts) |
 | `CACHE_TTL` | 300 | Cache time-to-live in seconds |
 
@@ -304,7 +304,7 @@ The project includes Docker support for easy deployment:
 docker build -t github-wrapped .
 
 # Run
-docker run -p 3000:3000 -e GITHUB_TOKEN=xxx -e GEMINI_API_KEY=xxx github-wrapped
+docker run -p 3000:3000 -e TOKEN=xxx -e GEMINI_API_KEY=xxx github-wrapped
 ```
 
 Or use Docker Compose as shown in Quick Start.

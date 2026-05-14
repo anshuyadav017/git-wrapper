@@ -11,8 +11,8 @@ const getHeaders = () => {
     'Accept': 'application/vnd.github.v3+json',
     'User-Agent': 'GitHub-Wrapped-App'
   };
-  if (process.env.GITHUB_TOKEN) {
-    headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+  if (process.env.TOKEN) {
+    headers['Authorization'] = `token ${process.env.TOKEN}`;
   }
   return headers;
 };
@@ -80,7 +80,7 @@ const getUserContributionData = async (username) => {
   const cached = defaultCache.get(cacheKey);
   if (cached) return cached;
 
-  if (!process.env.GITHUB_TOKEN) {
+  if (!process.env.TOKEN) {
     throw new ExternalServiceError('GitHub token required for contribution data');
   }
 
@@ -117,7 +117,7 @@ const getUserContributionData = async (username) => {
       { query: graphqlQuery },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+          'Authorization': `Bearer ${process.env.TOKEN}`,
           'Content-Type': 'application/json'
         }
       }
