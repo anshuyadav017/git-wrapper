@@ -1,0 +1,32 @@
+{
+  "name": "github-wrapped",
+  "version": "1.0.0",
+  "description": "A REST API that takes any GitHub username and returns rich stats with AI-generated roast/praise and shareable PNG cards",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/ tests/",
+    "docker:build": "docker build -t github-wrapped .",
+    "docker:run": "docker run -p 3000:3000 github-wrapped"
+  },
+  "keywords": ["github", "wrapped", "api", "express", "canvas"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "jimp": "^0.22.12",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

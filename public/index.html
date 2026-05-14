@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Wrapped | Discover Your Year in Code</title>
+    <!-- Google Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    </style>
+    <style>
+        :root {
+            /* Cinematic Color Palette (No Purple) */
+            --bg-primary: #05070a;
+            --bg-secondary: #0d1117;
+            --bg-tertiary: #161b22;
+            --accent: #00d2ff; /* Neon Blue */
+            --accent-glow: rgba(0, 210, 255, 0.3);
+            --secondary: #3fb950; /* GitHub Green */
+            --secondary-glow: rgba(63, 185, 80, 0.3);
+            
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            
+            --border: rgba(240, 246, 252, 0.1);
+            --border-hover: rgba(0, 210, 255, 0.4);
+            
+            --font-display: 'Orbitron', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base & Resets */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* SVG Grain Texture Overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.05;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: var(--font-display);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        /* Layout Components */
+        .nav-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: linear-gradient(to bottom, rgba(5,7,10,0.8), transparent);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span {
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .compare-link {
+            padding: 0.6rem 1.5rem;
+            border-radius: 999px;
+            background: transparent;
+            border: 1px solid var(--border);
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            transition: var(--transition);
+        }
+
+        .compare-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 10%;
+            position: relative;
+            z-index: 2;
+        }
+
+        #star-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            margin-bottom: 1rem;
+            line-height: 1;
+        }
+
+        .typewriter-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1em;
+            background-color: var(--accent);
+            margin-left: 5px;
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 1s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Input Styles */
+        .search-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 1.5s;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1.2rem 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-family: var(--font-sans);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-box:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 25px var(--accent-glow);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            bottom: 8px;
+            padding: 0 1.5rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-btn:hover {
+            filter: brightness(1.2);
+            transform: scale(1.05);
+        }
+
+        .example-pills {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 2s;
+        }
+
+        .pill {
+            padding: 0.4rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .pill:hover {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        /* How it Works */
+        .how-it-works {
+            padding: 8rem 5%;
+            background: var(--bg-secondary);
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+            font-size: 2.5rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            background: var(--bg-primary);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .step-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.1);
+        }
+
+        .step-number {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            color: var(--bg-tertiary);
+            margin-bottom: 1rem;
+        }
+
+        .step-card h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .step-card p {
+            color: var(--text-secondary);
+        }
+
+        footer {
+            padding: 4rem 5%;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .nav-fixed { padding: 1.5rem 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <svg class="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+    </svg>
+
+    <canvas id="star-canvas"></canvas>
+
+    <nav class="nav-fixed">
+        <div class="logo">
+            GITHUB <span>WRAPPED</span>
+        </div>
+        <a href="compare.html" class="compare-link">Compare Users</a>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h1 class="hero-title" id="typewriter-title"></h1>
+            <p class="hero-subtitle">Celebrate your year in code. Get an AI-powered retrospective of your GitHub contributions, beautifully rendered and ready to share.</p>
+            
+            <div class="search-container">
+                <input type="text" id="username-input" class="search-box" placeholder="Enter your GitHub username..." spellcheck="false" autocomplete="off">
+                <button class="search-btn" id="generate-btn">GENERATE</button>
+            </div>
+
+            <div class="example-pills">
+                <div class="pill" data-user="torvalds">torvalds</div>
+                <div class="pill" data-user="gaearon">gaearon</div>
+                <div class="pill" data-user="sindresorhus">sindresorhus</div>
+            </div>
+        </section>
+
+        <section class="how-it-works">
+            <h2 class="section-title">How It Works</h2>
+            <div class="cards-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <h3>Analyze</h3>
+                    <p>We fetch your public activity, commits, PRs, and stars from the past year.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <h3>Retrospect</h3>
+                    <p>Our AI analyzes your coding patterns to give you a personalized roast or praise.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <h3>Share</h3>
+                    <p>Generate a cinematic card of your achievements and show the world your 2024.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 GitHub Wrapped. Not affiliated with GitHub, Inc.</p>
+    </footer>
+
+    <script>
+        // Star Canvas Animation
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Star {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speed = Math.random() * 0.5 + 0.1;
+                this.opacity = Math.random();
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y < 0) this.reset();
+            }
+            draw() {
+                ctx.fillStyle = `rgba(0, 210, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 200; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initStars();
+        animate();
+
+        // Typewriter Effect
+        const titleElement = document.getElementById('typewriter-title');
+        const text = "YOUR YEAR IN CODE.";
+        let index = 0;
+
+        function type() {
+            if (index < text.length) {
+                titleElement.innerHTML = text.slice(0, index + 1) + '<span class="typewriter-cursor"></span>';
+                index++;
+                setTimeout(type, 100);
+            }
+        }
+
+        setTimeout(type, 500);
+
+        // Interaction
+        const input = document.getElementById('username-input');
+        const btn = document.getElementById('generate-btn');
+        const pills = document.querySelectorAll('.pill');
+
+        function generate() {
+            const username = input.value.trim();
+            if (username) {
+                // For demo, we navigate to result.html with the user param
+                window.location.href = `result.html?user=${username}`;
+            }
+        }
+
+        btn.addEventListener('click', generate);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generate();
+        });
+
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                input.value = pill.getAttribute('data-user');
+                generate();
+            });
+        });
+
+        // Intersection Observer for Reveal
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.step-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.8s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

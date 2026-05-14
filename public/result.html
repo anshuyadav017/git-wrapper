@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Wrapped | GitHub Wrapped</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    </style>
+    <style>
+        :root {
+            --bg-primary: #05070a;
+            --bg-secondary: #0d1117;
+            --bg-tertiary: #161b22;
+            --accent: #00d2ff;
+            --accent-glow: rgba(0, 210, 255, 0.3);
+            --secondary: #3fb950;
+            --danger: #f85149;
+            --warning: #d29922;
+            
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            
+            --border: rgba(240, 246, 252, 0.1);
+            --font-display: 'Orbitron', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* SVG Grain Texture Overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.05;
+        }
+
+        /* Initial Unwrapping Animation */
+        #unwrapped-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+        }
+
+        #explosion-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .gift-box {
+            font-size: 5rem;
+            z-index: 2;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-30px);}
+            60% {transform: translateY(-15px);}
+        }
+
+        /* Camera Flash Overlay */
+        #flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 20000;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* Sticky Top Bar */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            padding: 1rem 5%;
+            background: rgba(5, 7, 10, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+        }
+
+        .mini-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--accent);
+        }
+
+        .share-btn-mini {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .share-btn-mini:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Main Content */
+        .result-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 5%;
+            display: grid;
+            gap: 4rem;
+        }
+
+        /* Hero Stat */
+        .hero-stat {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .hero-stat h1 {
+            font-size: clamp(4rem, 15vw, 10rem);
+            line-height: 1;
+            margin-bottom: 1rem;
+            background: linear-gradient(to bottom, white, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-stat p {
+            font-family: var(--font-display);
+            color: var(--text-secondary);
+            letter-spacing: 4px;
+        }
+
+        /* Profile Row */
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .avatar-main {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--bg-secondary);
+            z-index: 2;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .avatar-main.loaded {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .neon-ring {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--accent);
+            border-bottom-color: var(--secondary);
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .badge-personality {
+            background: var(--secondary);
+            color: var(--bg-primary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 999px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.8rem;
+            box-shadow: 0 0 20px var(--secondary-glow);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .badge-personality.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .stat-val {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        /* Language Bar */
+        .lang-section {
+            background: var(--bg-secondary);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .lang-section h3 {
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .lang-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .lang-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .lang-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-family: var(--font-display);
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0;
+            transition: width 1.5s ease;
+        }
+
+        /* Activity Section */
+        .activity-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .activity-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .clock-container {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        .clock-svg {
+            transform: rotate(-90deg);
+        }
+
+        .clock-bg {
+            fill: none;
+            stroke: var(--bg-tertiary);
+            stroke-width: 10;
+        }
+
+        .clock-progress {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 10;
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            transition: stroke-dashoffset 2s ease;
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 4px;
+            width: 100%;
+        }
+
+        .heat-cell {
+            aspect-ratio: 1;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+        }
+
+        /* Flip Card */
+        .flip-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 400px;
+        }
+
+        .flipper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .flipper.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #2d0a0a, #0d1117);
+            border: 2px solid var(--danger);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #2d260a, #0d1117);
+            border: 2px solid var(--warning);
+            transform: rotateY(180deg);
+        }
+
+        .particle-canvas-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .card-emoji { font-size: 4rem; margin-bottom: 1.5rem; z-index: 2; }
+        .card-title { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1rem; z-index: 2; }
+        .card-text { color: var(--text-secondary); font-size: 1.1rem; line-height: 1.6; z-index: 2; }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 1.2rem 3rem;
+            border-radius: 12px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .download-btn {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid, .activity-section { grid-template-columns: 1fr; }
+            .hero-stat h1 { font-size: 5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <svg class="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+    </svg>
+
+    <div id="flash-overlay"></div>
+
+    <div id="unwrapped-overlay">
+        <canvas id="explosion-canvas"></canvas>
+        <div class="gift-box" id="gift-box">🎁</div>
+    </div>
+
+    <header class="top-bar">
+        <div class="user-pill">
+            <img src="https://github.com/torvalds.png" class="mini-avatar" alt="torvalds">
+            @torvalds
+        </div>
+        <button class="share-btn-mini">SHARE RESULT</button>
+    </header>
+
+    <main class="result-container">
+        <section class="hero-stat">
+            <h1 id="total-commits-hero">0</h1>
+            <p>TOTAL COMMITS IN 2024</p>
+        </section>
+
+        <section class="profile-header">
+            <div class="avatar-wrapper">
+                <div class="neon-ring"></div>
+                <img src="https://github.com/torvalds.png" class="avatar-main" id="profile-avatar" alt="torvalds">
+            </div>
+            <div class="badge-personality" id="badge">KERNEL ARCHITECT</div>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-val" id="val-prs">0</span>
+                <span class="stat-label">Pull Requests Merged</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="val-stars">0</span>
+                <span class="stat-label">Stars Earned</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="val-streak">0</span>
+                <span class="stat-label">Longest Daily Streak</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="val-repos">0</span>
+                <span class="stat-label">New Repositories</span>
+            </div>
+        </section>
+
+        <section class="lang-section">
+            <h3 class="stat-label">LANGUAGE DISTRIBUTION</h3>
+            <div class="lang-bars" id="lang-container">
+                <!-- Rows injected by JS -->
+            </div>
+        </section>
+
+        <section class="activity-section">
+            <div class="activity-card">
+                <h3 class="stat-label">MOST ACTIVE TIME</h3>
+                <div class="clock-container">
+                    <svg class="clock-svg" width="120" height="120">
+                        <circle class="clock-bg" cx="60" cy="60" r="50"></circle>
+                        <circle class="clock-progress" id="clock-arc" cx="60" cy="60" r="50"></circle>
+                    </svg>
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:var(--font-display);">2 AM</div>
+                </div>
+                <p style="color:var(--text-secondary); font-size:0.8rem;">The Night Owl Hours</p>
+            </div>
+            <div class="activity-card">
+                <h3 class="stat-label">COMMIT VELOCITY</h3>
+                <div class="heatmap" id="heatmap">
+                    <!-- Cells injected by JS -->
+                </div>
+                <p style="color:var(--text-secondary); font-size:0.8rem;">Peak Activity Patterns</p>
+            </div>
+        </section>
+
+        <section class="flip-container">
+            <div class="flipper" id="flipper">
+                <div class="card-front">
+                    <canvas id="fire-canvas" class="particle-canvas-card"></canvas>
+                    <div class="card-emoji">🔥</div>
+                    <div class="card-title">THE ROAST</div>
+                    <p class="card-text">"Your commit messages are just 'fixed' and your indentation looks like a game of Jenga. Linus would like a word."</p>
+                </div>
+                <div class="card-back">
+                    <canvas id="sparkle-canvas" class="particle-canvas-card"></canvas>
+                    <div class="card-emoji">✨</div>
+                    <div class="card-title">THE PRAISE</div>
+                    <p class="card-text">"An absolute legend. You move bits with the precision of a surgeon. Your code is the foundation of the digital world."</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="actions">
+            <button class="action-btn download-btn" id="flash-btn">DOWNLOAD CARD</button>
+        </section>
+    </main>
+
+    <script>
+        // Mock Data
+        const data = {
+            commits: 3452,
+            prs: 412,
+            stars: 12503,
+            streak: 84,
+            repos: 12,
+            langs: [
+                { name: 'C', percent: 85, color: '#555555' },
+                { name: 'Assembly', percent: 10, color: '#6E4C13' },
+                { name: 'C++', percent: 5, color: '#f34b7d' }
+            ]
+        };
+
+        // Explosion Canvas
+        const expCanvas = document.getElementById('explosion-canvas');
+        const expCtx = expCanvas.getContext('2d');
+        let particles = [];
+
+        function resizeExp() {
+            expCanvas.width = window.innerWidth;
+            expCanvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 20;
+                this.vy = (Math.random() - 0.5) * 20;
+                this.size = Math.random() * 8 + 2;
+                this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                this.life = 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.2; // gravity
+                this.life -= 0.01;
+            }
+            draw() {
+                expCtx.globalAlpha = this.life;
+                expCtx.fillStyle = this.color;
+                expCtx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        function animateExp() {
+            expCtx.clearRect(0, 0, expCanvas.width, expCanvas.height);
+            particles.forEach((p, i) => {
+                p.update();
+                p.draw();
+                if (p.life <= 0) particles.splice(i, 1);
+            });
+            if (particles.length > 0) requestAnimationFrame(animateExp);
+        }
+
+        // Start Sequence
+        document.getElementById('gift-box').addEventListener('click', () => {
+            const rect = document.getElementById('gift-box').getBoundingClientRect();
+            for (let i = 0; i < 150; i++) {
+                particles.push(new Particle(rect.left + rect.width/2, rect.top + rect.height/2));
+            }
+            document.getElementById('gift-box').style.display = 'none';
+            animateExp();
+            setTimeout(() => {
+                document.getElementById('unwrapped-overlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('unwrapped-overlay').style.display = 'none';
+                    runAnimations();
+                }, 1000);
+            }, 500);
+        });
+
+        // Animations after reveal
+        function runAnimations() {
+            // Count up numbers
+            countTo('total-commits-hero', data.commits);
+            countTo('val-prs', data.prs);
+            countTo('val-stars', data.stars);
+            countTo('val-streak', data.streak);
+            countTo('val-repos', data.repos);
+
+            // Load Avatar
+            setTimeout(() => {
+                document.getElementById('profile-avatar').classList.add('loaded');
+                document.getElementById('badge').classList.add('show');
+            }, 500);
+
+            // Fill Bars
+            const container = document.getElementById('lang-container');
+            data.langs.forEach((l, i) => {
+                const row = document.createElement('div');
+                row.className = 'lang-row';
+                row.innerHTML = `
+                    <div class="lang-info"><span>${l.name}</span><span>${l.percent}%</span></div>
+                    <div class="bar-container"><div class="bar-fill" style="background:${l.color}; width:0%"></div></div>
+                `;
+                container.appendChild(row);
+                setTimeout(() => {
+                    row.querySelector('.bar-fill').style.width = l.percent + '%';
+                }, 200 + (i * 100));
+            });
+
+            // Heatmap
+            const heatmap = document.getElementById('heatmap');
+            for (let i = 0; i < 60; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'heat-cell';
+                heatmap.appendChild(cell);
+                setTimeout(() => {
+                    cell.style.background = `rgba(63, 185, 80, ${Math.random()})`;
+                    cell.style.boxShadow = `0 0 10px rgba(63, 185, 80, ${Math.random() * 0.5})`;
+                }, 1000 + (i * 20));
+            }
+
+            // Clock Arc
+            setTimeout(() => {
+                document.getElementById('clock-arc').style.strokeDashoffset = '78'; // Approx 75%
+            }, 1000);
+        }
+
+        function countTo(id, target) {
+            let current = 0;
+            const step = () => {
+                current += Math.ceil(target / 60);
+                if (current > target) current = target;
+                document.getElementById(id).innerText = current.toLocaleString();
+                if (current < target) requestAnimationFrame(step);
+            };
+            step();
+        }
+
+        // Card Flip
+        const flipper = document.getElementById('flipper');
+        flipper.addEventListener('click', () => {
+            flipper.classList.toggle('flipped');
+        });
+
+        // Flash Effect
+        document.getElementById('flash-btn').addEventListener('click', () => {
+            const flash = document.getElementById('flash-overlay');
+            flash.style.opacity = '1';
+            setTimeout(() => { flash.style.opacity = '0'; flash.style.transition = 'opacity 1s ease'; }, 50);
+        });
+
+        // Particles for cards
+        function initCardParticles(canvasId, color, count) {
+            const c = document.getElementById(canvasId);
+            const ctx = c.getContext('2d');
+            let pts = [];
+            
+            function resize() {
+                c.width = c.offsetWidth;
+                c.height = c.offsetHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            for (let i = 0; i < count; i++) {
+                pts.push({
+                    x: Math.random() * c.width,
+                    y: Math.random() * c.height,
+                    s: Math.random() * 2 + 1,
+                    v: Math.random() * 1 + 0.5
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.fillStyle = color;
+                pts.forEach(p => {
+                    p.y -= p.v;
+                    if (p.y < 0) p.y = c.height;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        initCardParticles('fire-canvas', '#f8514944', 50);
+        initCardParticles('sparkle-canvas', '#d2992244', 50);
+
+        window.addEventListener('resize', resizeExp);
+        resizeExp();
+    </script>
+</body>
+</html>
