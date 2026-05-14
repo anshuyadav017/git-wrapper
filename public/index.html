@@ -3,516 +3,532 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Wrapped | Discover Your Year in Code</title>
-    <!-- Google Fonts -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
-    </style>
+    <title>GitHub Wrapped | Your Year in Code</title>
+    <meta name="description" content="Discover your GitHub year in code. AI-powered stats, roasts, and shareable cards.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Cinematic Color Palette (No Purple) */
+            --bg-void: #020408;
             --bg-primary: #05070a;
-            --bg-secondary: #0d1117;
-            --bg-tertiary: #161b22;
-            --accent: #00d2ff; /* Neon Blue */
-            --accent-glow: rgba(0, 210, 255, 0.3);
-            --secondary: #3fb950; /* GitHub Green */
-            --secondary-glow: rgba(63, 185, 80, 0.3);
-            
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
+            --bg-secondary: #0a0e17;
+            --bg-card: rgba(10, 14, 23, 0.6);
+            --bg-glass: rgba(10, 14, 23, 0.4);
+            --accent: #00d2ff;
+            --accent-dim: #0088aa;
+            --accent-glow: rgba(0, 210, 255, 0.25);
+            --accent-glow-strong: rgba(0, 210, 255, 0.5);
+            --green: #3fb950;
+            --green-glow: rgba(63, 185, 80, 0.25);
+            --orange: #f0883e;
+            --text-primary: #e6edf3;
+            --text-secondary: #7d8590;
             --text-muted: #484f58;
-            
-            --border: rgba(240, 246, 252, 0.1);
-            --border-hover: rgba(0, 210, 255, 0.4);
-            
+            --border: rgba(240, 246, 252, 0.06);
+            --border-hover: rgba(0, 210, 255, 0.3);
             --font-display: 'Orbitron', sans-serif;
-            --font-sans: 'Inter', sans-serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
-            
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Base & Resets */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            background-color: var(--bg-primary);
+            background: var(--bg-void);
             color: var(--text-primary);
-            font-family: var(--font-sans);
+            font-family: var(--font-body);
             overflow-x: hidden;
-            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* SVG Grain Texture Overlay */
-        .noise-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0.05;
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-secondary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+        /* Canvas backgrounds */
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--bg-tertiary);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
+        .gradient-orbs {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; overflow: hidden;
         }
 
-        /* Typography */
-        h1, h2, h3, h4 {
-            font-family: var(--font-display);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+        .orb-1 { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 500px; height: 500px; background: var(--green); bottom: -200px; right: -100px; animation-delay: -7s; }
+        .orb-3 { width: 400px; height: 400px; background: var(--orange); top: 50%; left: 50%; animation-delay: -14s; }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -80px) scale(1.1); }
+            50% { transform: translate(-30px, 60px) scale(0.9); }
+            75% { transform: translate(80px, 30px) scale(1.05); }
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-            transition: var(--transition);
+        /* Navigation */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+            padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(20px) saturate(1.8);
+            background: rgba(2, 4, 8, 0.6);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.4s var(--ease-out-expo);
         }
 
-        /* Layout Components */
-        .nav-fixed {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 2rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            background: linear-gradient(to bottom, rgba(5,7,10,0.8), transparent);
-        }
+        nav.scrolled { background: rgba(2, 4, 8, 0.9); padding: 0.8rem 5%; }
 
         .logo {
-            font-family: var(--font-display);
-            font-size: 1.2rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            font-family: var(--font-display); font-weight: 900; font-size: 1.1rem;
+            display: flex; align-items: center; gap: 0.5rem; letter-spacing: 2px;
         }
-
-        .logo span {
-            color: var(--accent);
-            text-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        .compare-link {
-            padding: 0.6rem 1.5rem;
-            border-radius: 999px;
-            background: transparent;
-            border: 1px solid var(--border);
-            font-family: var(--font-display);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            transition: var(--transition);
-        }
-
-        .compare-link:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+        .logo-icon {
+            width: 28px; height: 28px; background: var(--accent);
+            border-radius: 6px; display: grid; place-items: center;
+            font-size: 0.8rem; color: var(--bg-void); font-weight: 900;
             box-shadow: 0 0 20px var(--accent-glow);
-            transform: translateY(-2px);
+        }
+        .logo span { color: var(--accent); text-shadow: 0 0 30px var(--accent-glow); }
+
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-link {
+            font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 2px;
+            text-transform: uppercase; color: var(--text-secondary);
+            text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px;
+            transition: all 0.3s ease; position: relative;
+        }
+        .nav-link:hover { color: var(--text-primary); }
+        .nav-link.cta {
+            border: 1px solid var(--border); background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+        }
+        .nav-link.cta:hover {
+            border-color: var(--accent); color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
-        /* Hero Section */
+        /* Hero */
         .hero {
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 10%;
-            position: relative;
-            z-index: 2;
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            padding: 0 5%; position: relative; z-index: 1;
         }
 
-        #star-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1.2rem; border-radius: 999px;
+            background: rgba(0, 210, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.15);
+            font-size: 0.75rem; color: var(--accent); font-weight: 500;
+            margin-bottom: 2rem; letter-spacing: 1px;
+            opacity: 0; animation: fadeSlideUp 0.8s var(--ease-out-expo) 0.2s forwards;
+        }
+        .badge-dot {
+            width: 6px; height: 6px; background: var(--green); border-radius: 50%;
+            animation: pulse-dot 2s ease infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(63,185,80,0.6); }
+            50% { box-shadow: 0 0 0 6px rgba(63,185,80,0); }
         }
 
         .hero-title {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            margin-bottom: 1rem;
-            line-height: 1;
+            font-family: var(--font-display); font-weight: 900;
+            font-size: clamp(2.8rem, 8vw, 6rem); line-height: 1.05;
+            letter-spacing: 3px; margin-bottom: 1.5rem; min-height: 1.2em;
+        }
+        .title-line { display: block; }
+        .title-gradient {
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--green) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-size: 200% 200%; animation: gradientShift 4s ease infinite;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
-        .typewriter-cursor {
-            display: inline-block;
-            width: 10px;
-            height: 1em;
-            background-color: var(--accent);
-            margin-left: 5px;
-            animation: blink 0.8s infinite;
+        .cursor-blink {
+            display: inline-block; width: 4px; height: 0.85em;
+            background: var(--accent); margin-left: 4px; vertical-align: middle;
+            animation: cursorBlink 1s step-end infinite;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+        @keyframes cursorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .hero-sub {
+            font-size: 1.15rem; color: var(--text-secondary); max-width: 560px;
+            line-height: 1.7; margin-bottom: 3rem;
+            opacity: 0; animation: fadeSlideUp 0.8s var(--ease-out-expo) 1.2s forwards;
         }
 
-        @keyframes blink {
-            50% { opacity: 0; }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin-bottom: 3rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 1s ease forwards 1s;
+        /* Search */
+        .search-wrap {
+            width: 100%; max-width: 520px; position: relative;
+            opacity: 0; animation: fadeSlideUp 0.8s var(--ease-out-expo) 1.6s forwards;
         }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .search-glow {
+            position: absolute; inset: -2px; border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--green));
+            opacity: 0; transition: opacity 0.4s ease; z-index: 0;
+            filter: blur(6px);
         }
+        .search-wrap:focus-within .search-glow { opacity: 0.4; }
 
-        /* Input Styles */
-        .search-container {
-            width: 100%;
-            max-width: 500px;
-            position: relative;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 1s ease forwards 1.5s;
+        .search-inner {
+            position: relative; z-index: 1; display: flex; align-items: center;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+            transition: border-color 0.3s ease;
         }
+        .search-wrap:focus-within .search-inner { border-color: var(--accent); }
 
-        .search-box {
-            width: 100%;
-            padding: 1.2rem 2rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: white;
-            font-size: 1.1rem;
-            font-family: var(--font-sans);
+        .search-icon {
+            padding: 0 0 0 1.2rem; color: var(--text-muted); font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .search-input {
+            flex: 1; padding: 1.1rem 1rem; background: transparent; border: none;
+            color: var(--text-primary); font-size: 1rem; font-family: var(--font-body);
             outline: none;
-            transition: var(--transition);
         }
-
-        .search-box:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 25px var(--accent-glow);
-        }
+        .search-input::placeholder { color: var(--text-muted); }
 
         .search-btn {
-            position: absolute;
-            right: 8px;
-            top: 8px;
-            bottom: 8px;
-            padding: 0 1.5rem;
-            background: var(--accent);
-            border: none;
-            border-radius: 8px;
-            font-family: var(--font-display);
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
+            margin: 6px; padding: 0.8rem 1.8rem; border: none; border-radius: 10px;
+            font-family: var(--font-display); font-weight: 700; font-size: 0.75rem;
+            letter-spacing: 2px; cursor: pointer; color: var(--bg-void);
+            background: linear-gradient(135deg, var(--accent), #00a5cc);
+            transition: all 0.3s ease; flex-shrink: 0;
+        }
+        .search-btn:hover { transform: scale(1.05); box-shadow: 0 0 25px var(--accent-glow); }
+        .search-btn:active { transform: scale(0.97); }
+        .search-btn.loading {
+            pointer-events: none; opacity: 0.7;
+            background: var(--text-muted);
         }
 
-        .search-btn:hover {
-            filter: brightness(1.2);
-            transform: scale(1.05);
+        /* Error message */
+        .error-msg {
+            position: absolute; bottom: -2.5rem; left: 0; right: 0;
+            text-align: center; color: #f85149; font-size: 0.8rem;
+            opacity: 0; transition: opacity 0.3s ease;
         }
+        .error-msg.show { opacity: 1; }
 
-        .example-pills {
-            margin-top: 1.5rem;
-            display: flex;
-            gap: 1rem;
-            opacity: 0;
-            animation: fadeIn 1s ease forwards 2s;
+        /* Pill suggestions */
+        .pills {
+            display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;
+            margin-top: 2rem;
+            opacity: 0; animation: fadeSlideUp 0.8s var(--ease-out-expo) 2s forwards;
         }
-
         .pill {
-            padding: 0.4rem 1rem;
-            background: var(--bg-tertiary);
-            border-radius: 999px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: var(--transition);
+            padding: 0.45rem 1.1rem; border-radius: 999px; font-size: 0.8rem;
+            font-family: var(--font-mono); color: var(--text-secondary);
+            background: var(--bg-glass); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
         }
-
         .pill:hover {
-            border-color: var(--secondary);
-            color: var(--secondary);
+            border-color: var(--accent); color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow); transform: translateY(-2px);
         }
 
-        /* How it Works */
-        .how-it-works {
-            padding: 8rem 5%;
-            background: var(--bg-secondary);
-            position: relative;
-            z-index: 2;
+        /* Features section */
+        .features {
+            position: relative; z-index: 1; padding: 8rem 5% 6rem;
+            background: linear-gradient(180deg, transparent, var(--bg-secondary) 30%, var(--bg-secondary) 70%, transparent);
+        }
+        .features-title {
+            text-align: center; font-family: var(--font-display); font-size: 2rem;
+            font-weight: 700; letter-spacing: 3px; margin-bottom: 1rem;
+        }
+        .features-sub {
+            text-align: center; color: var(--text-secondary); margin-bottom: 4rem;
+            font-size: 1rem;
         }
 
-        .section-title {
-            text-align: center;
-            margin-bottom: 4rem;
-            font-size: 2.5rem;
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem; max-width: 1100px; margin: 0 auto;
         }
 
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+        .feature-card {
+            position: relative; padding: 2.5rem 2rem; border-radius: 20px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            backdrop-filter: blur(12px); overflow: hidden;
+            transition: all 0.5s var(--ease-out-expo);
+            opacity: 0; transform: translateY(40px);
         }
-
-        .step-card {
-            background: var(--bg-primary);
-            padding: 3rem 2rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            transition: var(--transition);
-            text-align: center;
+        .feature-card.visible { opacity: 1; transform: translateY(0); }
+        .feature-card:hover {
+            border-color: var(--border-hover); transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px var(--accent-glow);
         }
-
-        .step-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--accent);
-            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.1);
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0; transition: opacity 0.4s ease;
         }
+        .feature-card:hover::before { opacity: 1; }
 
-        .step-number {
-            font-family: var(--font-display);
-            font-size: 3rem;
-            color: var(--bg-tertiary);
-            margin-bottom: 1rem;
+        .feature-step {
+            font-family: var(--font-display); font-size: 0.65rem; color: var(--accent);
+            letter-spacing: 3px; margin-bottom: 1.2rem;
         }
-
-        .step-card h3 {
-            margin-bottom: 1rem;
-            color: var(--accent);
+        .feature-icon {
+            font-size: 2.5rem; margin-bottom: 1.2rem; display: block;
+            filter: drop-shadow(0 0 15px var(--accent-glow));
         }
-
-        .step-card p {
-            color: var(--text-secondary);
+        .feature-card h3 {
+            font-family: var(--font-display); font-size: 1rem; letter-spacing: 2px;
+            margin-bottom: 0.8rem; text-transform: uppercase;
         }
+        .feature-card p { color: var(--text-secondary); line-height: 1.7; font-size: 0.9rem; }
 
+        /* Footer */
         footer {
-            padding: 4rem 5%;
-            text-align: center;
-            border-top: 1px solid var(--border);
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            position: relative; z-index: 1; padding: 3rem 5%;
+            text-align: center; border-top: 1px solid var(--border);
+            color: var(--text-muted); font-size: 0.8rem;
         }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
 
-        /* Mobile Responsive */
+        /* Responsive */
         @media (max-width: 768px) {
-            .hero-title { font-size: 3rem; }
-            .cards-grid { grid-template-columns: 1fr; }
-            .nav-fixed { padding: 1.5rem 5%; }
+            .hero-title { font-size: clamp(2rem, 10vw, 3.5rem); }
+            .features-grid { grid-template-columns: 1fr; }
+            .nav-links { gap: 0.5rem; }
+            .nav-link { font-size: 0.6rem; padding: 0.4rem 0.8rem; }
+            .pills { gap: 0.5rem; }
         }
     </style>
 </head>
 <body>
 
-    <svg class="noise-overlay" xmlns="http://www.w3.org/2000/svg">
-        <filter id="noiseFilter">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
-        </filter>
-        <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
-    </svg>
+    <div class="gradient-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <canvas id="particle-canvas"></canvas>
 
-    <canvas id="star-canvas"></canvas>
-
-    <nav class="nav-fixed">
+    <nav id="main-nav">
         <div class="logo">
+            <div class="logo-icon">G</div>
             GITHUB <span>WRAPPED</span>
         </div>
-        <a href="compare.html" class="compare-link">Compare Users</a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">HOW IT WORKS</a>
+            <a href="compare.html" class="nav-link cta">⚔ COMPARE</a>
+        </div>
     </nav>
 
     <main>
         <section class="hero">
-            <h1 class="hero-title" id="typewriter-title"></h1>
-            <p class="hero-subtitle">Celebrate your year in code. Get an AI-powered retrospective of your GitHub contributions, beautifully rendered and ready to share.</p>
-            
-            <div class="search-container">
-                <input type="text" id="username-input" class="search-box" placeholder="Enter your GitHub username..." spellcheck="false" autocomplete="off">
-                <button class="search-btn" id="generate-btn">GENERATE</button>
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                POWERED BY AI · FREE & OPEN SOURCE
+            </div>
+            <h1 class="hero-title" id="hero-title"></h1>
+            <p class="hero-sub">Get an AI-powered retrospective of your GitHub year. Stunning stats, brutal roasts, genuine praise — all wrapped in a cinematic card you can share.</p>
+
+            <div class="search-wrap" id="search-wrap">
+                <div class="search-glow"></div>
+                <div class="search-inner">
+                    <span class="search-icon">@</span>
+                    <input type="text" id="username-input" class="search-input"
+                           placeholder="Enter GitHub username..."
+                           spellcheck="false" autocomplete="off" autofocus>
+                    <button class="search-btn" id="search-btn">UNWRAP</button>
+                </div>
+                <div class="error-msg" id="error-msg"></div>
             </div>
 
-            <div class="example-pills">
-                <div class="pill" data-user="torvalds">torvalds</div>
-                <div class="pill" data-user="gaearon">gaearon</div>
-                <div class="pill" data-user="sindresorhus">sindresorhus</div>
+            <div class="pills">
+                <span class="pill" data-user="torvalds">torvalds</span>
+                <span class="pill" data-user="gaearon">gaearon</span>
+                <span class="pill" data-user="sindresorhus">sindresorhus</span>
+                <span class="pill" data-user="ThePrimeagen">ThePrimeagen</span>
             </div>
         </section>
 
-        <section class="how-it-works">
-            <h2 class="section-title">How It Works</h2>
-            <div class="cards-grid">
-                <div class="step-card">
-                    <div class="step-number">01</div>
-                    <h3>Analyze</h3>
-                    <p>We fetch your public activity, commits, PRs, and stars from the past year.</p>
+        <section class="features" id="features">
+            <h2 class="features-title">HOW IT WORKS</h2>
+            <p class="features-sub">Three steps to your personalized GitHub retrospective</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-step">STEP 01</div>
+                    <span class="feature-icon">🔍</span>
+                    <h3>ANALYZE</h3>
+                    <p>We scan your public repos, commits, PRs, issues, and contribution graph from the past year using the GitHub API.</p>
                 </div>
-                <div class="step-card">
-                    <div class="step-number">02</div>
-                    <h3>Retrospect</h3>
-                    <p>Our AI analyzes your coding patterns to give you a personalized roast or praise.</p>
+                <div class="feature-card">
+                    <div class="feature-step">STEP 02</div>
+                    <span class="feature-icon">🧠</span>
+                    <h3>AI INSIGHT</h3>
+                    <p>Our AI engine generates a personalized roast and praise based on your unique coding patterns and stats.</p>
                 </div>
-                <div class="step-card">
-                    <div class="step-number">03</div>
-                    <h3>Share</h3>
-                    <p>Generate a cinematic card of your achievements and show the world your 2024.</p>
+                <div class="feature-card">
+                    <div class="feature-step">STEP 03</div>
+                    <span class="feature-icon">🎨</span>
+                    <h3>SHARE</h3>
+                    <p>Get a stunning visual card of your achievements. Download it, share on socials, or compare with friends.</p>
                 </div>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 GitHub Wrapped. Not affiliated with GitHub, Inc.</p>
+        <p>&copy; 2024 GitHub Wrapped · Built by <a href="https://github.com/anshuyadav017" target="_blank">anshuyadav017</a> · Not affiliated with GitHub, Inc.</p>
     </footer>
 
     <script>
-        // Star Canvas Animation
-        const canvas = document.getElementById('star-canvas');
+        /* ── Particle System ── */
+        const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
-        let stars = [];
+        let particles = [], mouseX = 0, mouseY = 0;
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+        addEventListener('resize', resize); resize();
+        addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
 
-        class Star {
-            constructor() {
-                this.reset();
-            }
+        class Particle {
+            constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2;
-                this.speed = Math.random() * 0.5 + 0.1;
-                this.opacity = Math.random();
+                this.size = Math.random() * 1.5 + 0.3;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.hue = Math.random() > 0.5 ? 190 : 140;
             }
             update() {
-                this.y -= this.speed;
-                if (this.y < 0) this.reset();
+                this.x += this.speedX; this.y += this.speedY;
+                const dx = mouseX - this.x, dy = mouseY - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 150) {
+                    this.x -= dx * 0.008; this.y -= dy * 0.008;
+                    this.opacity = Math.min(1, this.opacity + 0.02);
+                }
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
             }
             draw() {
-                ctx.fillStyle = `rgba(0, 210, 255, ${this.opacity})`;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 80%, 65%, ${this.opacity})`;
                 ctx.fill();
             }
         }
 
-        function initStars() {
-            stars = [];
-            for (let i = 0; i < 200; i++) {
-                stars.push(new Star());
+        for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+        function connectParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const d = dx*dx + dy*dy;
+                    if (d < 12000) {
+                        ctx.strokeStyle = `rgba(0, 210, 255, ${0.06 * (1 - d/12000)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
             }
         }
 
-        function animate() {
+        function animateParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            stars.forEach(star => {
-                star.update();
-                star.draw();
-            });
-            requestAnimationFrame(animate);
+            particles.forEach(p => { p.update(); p.draw(); });
+            connectParticles();
+            requestAnimationFrame(animateParticles);
         }
+        animateParticles();
 
-        window.addEventListener('resize', resize);
-        resize();
-        initStars();
-        animate();
+        /* ── Typewriter ── */
+        const lines = ["YOUR YEAR", "IN CODE."];
+        const titleEl = document.getElementById('hero-title');
+        let lineIdx = 0, charIdx = 0;
 
-        // Typewriter Effect
-        const titleElement = document.getElementById('typewriter-title');
-        const text = "YOUR YEAR IN CODE.";
-        let index = 0;
-
-        function type() {
-            if (index < text.length) {
-                titleElement.innerHTML = text.slice(0, index + 1) + '<span class="typewriter-cursor"></span>';
-                index++;
-                setTimeout(type, 100);
+        function typewrite() {
+            if (lineIdx >= lines.length) {
+                titleEl.innerHTML = `<span class="title-line">${lines[0]}</span><span class="title-line title-gradient">${lines[1]}</span><span class="cursor-blink"></span>`;
+                return;
             }
+            const current = lines.slice(0, lineIdx).map((l, i) =>
+                `<span class="title-line${i===1?' title-gradient':''}">${l}</span>`
+            ).join('');
+            const typing = lines[lineIdx].slice(0, charIdx + 1);
+            const cls = lineIdx === 1 ? ' title-gradient' : '';
+            titleEl.innerHTML = current + `<span class="title-line${cls}">${typing}<span class="cursor-blink"></span></span>`;
+            charIdx++;
+            if (charIdx >= lines[lineIdx].length) { lineIdx++; charIdx = 0; setTimeout(typewrite, 400); }
+            else setTimeout(typewrite, 80 + Math.random() * 40);
         }
+        setTimeout(typewrite, 600);
 
-        setTimeout(type, 500);
-
-        // Interaction
-        const input = document.getElementById('username-input');
-        const btn = document.getElementById('generate-btn');
-        const pills = document.querySelectorAll('.pill');
-
-        function generate() {
-            const username = input.value.trim();
-            if (username) {
-                // For demo, we navigate to result.html with the user param
-                window.location.href = `result.html?user=${username}`;
-            }
-        }
-
-        btn.addEventListener('click', generate);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') generate();
+        /* ── Nav scroll ── */
+        addEventListener('scroll', () => {
+            document.getElementById('main-nav').classList.toggle('scrolled', scrollY > 60);
         });
 
-        pills.forEach(pill => {
-            pill.addEventListener('click', () => {
-                input.value = pill.getAttribute('data-user');
-                generate();
-            });
-        });
-
-        // Intersection Observer for Reveal
-        const observerOptions = {
-            threshold: 0.1
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+        /* ── Feature cards reveal ── */
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach((e, i) => {
+                if (e.isIntersecting) {
+                    setTimeout(() => e.target.classList.add('visible'), i * 150);
+                    obs.unobserve(e.target);
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.feature-card').forEach(c => obs.observe(c));
 
-        document.querySelectorAll('.step-card').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = 'all 0.8s ease';
-            observer.observe(card);
+        /* ── Search / Navigation ── */
+        const input = document.getElementById('username-input');
+        const btn = document.getElementById('search-btn');
+        const errEl = document.getElementById('error-msg');
+
+        function showError(msg) {
+            errEl.textContent = msg; errEl.classList.add('show');
+            setTimeout(() => errEl.classList.remove('show'), 3000);
+        }
+
+        async function goToResult() {
+            const username = input.value.trim();
+            if (!username) { showError('Please enter a GitHub username'); input.focus(); return; }
+            if (!/^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(username)) {
+                showError('Invalid GitHub username format'); return;
+            }
+            btn.classList.add('loading'); btn.textContent = 'LOADING...';
+            // Navigate to result page — it will handle the API call
+            window.location.href = `result.html?user=${encodeURIComponent(username)}`;
+        }
+
+        btn.addEventListener('click', goToResult);
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') goToResult(); });
+        document.querySelectorAll('.pill').forEach(p => {
+            p.addEventListener('click', () => { input.value = p.dataset.user; goToResult(); });
         });
     </script>
 </body>

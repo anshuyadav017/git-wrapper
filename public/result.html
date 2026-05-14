@@ -4,779 +4,390 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Wrapped | GitHub Wrapped</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #05070a;
-            --bg-secondary: #0d1117;
-            --bg-tertiary: #161b22;
-            --accent: #00d2ff;
-            --accent-glow: rgba(0, 210, 255, 0.3);
-            --secondary: #3fb950;
-            --danger: #f85149;
-            --warning: #d29922;
-            
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
-            --text-muted: #484f58;
-            
-            --border: rgba(240, 246, 252, 0.1);
+            --bg-void: #020408; --bg-primary: #05070a; --bg-secondary: #0a0e17;
+            --bg-card: rgba(10,14,23,0.6); --bg-glass: rgba(10,14,23,0.4);
+            --accent: #00d2ff; --accent-dim: #0088aa;
+            --accent-glow: rgba(0,210,255,0.25); --green: #3fb950;
+            --green-glow: rgba(63,185,80,0.25); --orange: #f0883e;
+            --danger: #f85149; --warning: #d29922;
+            --text-primary: #e6edf3; --text-secondary: #7d8590; --text-muted: #484f58;
+            --border: rgba(240,246,252,0.06); --border-hover: rgba(0,210,255,0.3);
             --font-display: 'Orbitron', sans-serif;
-            --font-sans: 'Inter', sans-serif;
+            --font-body: 'Inter', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
-            
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-out-expo: cubic-bezier(0.16,1,0.3,1);
+            --ease-spring: cubic-bezier(0.175,0.885,0.32,1.275);
         }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg-void);color:var(--text-primary);font-family:var(--font-body);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:var(--bg-secondary);border-radius:10px}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* Loading overlay */
+        #loading-screen{position:fixed;inset:0;z-index:10000;background:var(--bg-void);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2rem;transition:opacity 0.8s ease}
+        #loading-screen.hide{opacity:0;pointer-events:none}
+        .loader-ring{width:80px;height:80px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);border-right-color:var(--green);animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loader-text{font-family:var(--font-display);font-size:0.8rem;letter-spacing:4px;color:var(--text-secondary);animation:pulse-text 2s ease infinite}
+        @keyframes pulse-text{0%,100%{opacity:0.5}50%{opacity:1}}
+        .loader-sub{font-size:0.75rem;color:var(--text-muted)}
 
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: var(--font-sans);
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
+        /* Error state */
+        #error-screen{position:fixed;inset:0;z-index:9999;background:var(--bg-void);display:none;flex-direction:column;justify-content:center;align-items:center;gap:1.5rem;text-align:center;padding:2rem}
+        #error-screen.show{display:flex}
+        .err-icon{font-size:4rem}
+        .err-title{font-family:var(--font-display);font-size:1.5rem;letter-spacing:2px}
+        .err-msg{color:var(--text-secondary);max-width:400px}
+        .err-btn{padding:0.8rem 2rem;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:10px;font-family:var(--font-display);font-size:0.75rem;letter-spacing:2px;cursor:pointer;transition:all 0.3s ease}
+        .err-btn:hover{background:var(--accent);color:var(--bg-void)}
 
-        /* SVG Grain Texture Overlay */
-        .noise-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0.05;
-        }
+        /* Top bar */
+        .top-bar{position:sticky;top:0;z-index:100;padding:0.8rem 5%;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);background:rgba(2,4,8,0.7);border-bottom:1px solid var(--border)}
+        .top-left{display:flex;align-items:center;gap:1rem}
+        .top-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+        .top-user{font-family:var(--font-display);font-size:0.75rem;letter-spacing:2px}
+        .top-right{display:flex;gap:0.8rem}
+        .top-btn{padding:0.5rem 1.2rem;border-radius:8px;font-family:var(--font-display);font-size:0.6rem;letter-spacing:2px;cursor:pointer;transition:all 0.3s ease;text-decoration:none;border:1px solid var(--border);background:transparent;color:var(--text-secondary)}
+        .top-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 15px var(--accent-glow)}
 
-        /* Initial Unwrapping Animation */
-        #unwrapped-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 1s ease;
-        }
+        /* Content */
+        .content{max-width:900px;margin:0 auto;padding:3rem 5% 6rem}
 
-        #explosion-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
+        /* Hero commit count */
+        .hero-number{text-align:center;padding:4rem 0 2rem;opacity:0;transform:translateY(30px);transition:all 1s var(--ease-out-expo)}
+        .hero-number.show{opacity:1;transform:translateY(0)}
+        .hero-val{font-family:var(--font-display);font-size:clamp(4rem,15vw,9rem);font-weight:900;line-height:1;background:linear-gradient(180deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero-label{font-family:var(--font-display);font-size:0.7rem;letter-spacing:6px;color:var(--text-secondary);margin-top:0.5rem}
 
-        .gift-box {
-            font-size: 5rem;
-            z-index: 2;
-            cursor: pointer;
-            animation: bounce 2s infinite;
-        }
+        /* Profile section */
+        .profile{display:flex;flex-direction:column;align-items:center;gap:1.5rem;padding:2rem 0;opacity:0;transform:scale(0.9);transition:all 0.8s var(--ease-spring)}
+        .profile.show{opacity:1;transform:scale(1)}
+        .avatar-ring{position:relative;width:140px;height:140px}
+        .avatar-ring::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid transparent;border-top-color:var(--accent);border-bottom-color:var(--green);animation:spin 2.5s linear infinite}
+        .avatar-ring::after{content:'';position:absolute;inset:-12px;border-radius:50%;border:1px solid transparent;border-left-color:var(--orange);animation:spin 4s linear infinite reverse}
+        .avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid var(--bg-secondary)}
+        .profile-name{font-family:var(--font-display);font-size:1.3rem;letter-spacing:2px}
+        .profile-bio{color:var(--text-secondary);font-size:0.9rem;text-align:center;max-width:400px}
+        .badge{display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1.5rem;border-radius:999px;background:linear-gradient(135deg,rgba(63,185,80,0.15),rgba(0,210,255,0.15));border:1px solid rgba(63,185,80,0.3);font-family:var(--font-display);font-size:0.7rem;font-weight:700;letter-spacing:2px;color:var(--green);box-shadow:0 0 20px var(--green-glow)}
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-30px);}
-            60% {transform: translateY(-15px);}
-        }
+        /* Stats grid */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:2rem 0}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.8rem 1.2rem;text-align:center;backdrop-filter:blur(12px);transition:all 0.4s var(--ease-out-expo);opacity:0;transform:translateY(20px)}
+        .stat-card.show{opacity:1;transform:translateY(0)}
+        .stat-card:hover{border-color:var(--border-hover);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+        .stat-val{font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:var(--accent);display:block;margin-bottom:0.4rem}
+        .stat-label{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)}
 
-        /* Camera Flash Overlay */
-        #flash-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 20000;
-            pointer-events: none;
-            opacity: 0;
-        }
+        /* Language section */
+        .lang-section{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;backdrop-filter:blur(12px);margin:1.5rem 0;opacity:0;transform:translateY(20px);transition:all 0.8s var(--ease-out-expo)}
+        .lang-section.show{opacity:1;transform:translateY(0)}
+        .section-label{font-family:var(--font-display);font-size:0.65rem;letter-spacing:3px;color:var(--text-muted);margin-bottom:1.8rem;text-transform:uppercase}
+        .lang-row{margin-bottom:1.4rem}
+        .lang-meta{display:flex;justify-content:space-between;margin-bottom:0.5rem}
+        .lang-name{font-family:var(--font-mono);font-size:0.85rem;display:flex;align-items:center;gap:0.5rem}
+        .lang-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+        .lang-pct{font-family:var(--font-mono);font-size:0.8rem;color:var(--text-secondary)}
+        .lang-track{width:100%;height:8px;background:var(--bg-primary);border-radius:4px;overflow:hidden}
+        .lang-fill{height:100%;border-radius:4px;width:0;transition:width 1.5s var(--ease-out-expo)}
 
-        /* Sticky Top Bar */
-        .top-bar {
-            position: sticky;
-            top: 0;
-            width: 100%;
-            padding: 1rem 5%;
-            background: rgba(5, 7, 10, 0.8);
-            backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            z-index: 1000;
-        }
+        /* Contribution heatmap */
+        .heat-section{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;backdrop-filter:blur(12px);margin:1.5rem 0;opacity:0;transform:translateY(20px);transition:all 0.8s var(--ease-out-expo)}
+        .heat-section.show{opacity:1;transform:translateY(0)}
+        .heatmap-grid{display:grid;grid-template-columns:repeat(26,1fr);gap:3px}
+        .heat-cell{aspect-ratio:1;background:rgba(255,255,255,0.03);border-radius:3px;transition:all 0.4s ease}
 
-        .user-pill {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-family: var(--font-display);
-            font-size: 0.9rem;
-        }
+        /* Streak + Activity row */
+        .info-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+        .info-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2rem;backdrop-filter:blur(12px);text-align:center;opacity:0;transform:translateY(20px);transition:all 0.8s var(--ease-out-expo)}
+        .info-card.show{opacity:1;transform:translateY(0)}
+        .info-big{font-family:var(--font-display);font-size:2.5rem;font-weight:900;color:var(--accent);margin:0.8rem 0}
+        .info-sub{color:var(--text-secondary);font-size:0.8rem}
 
-        .mini-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 1px solid var(--accent);
-        }
+        /* Flip card roast/praise */
+        .flip-section{margin:2rem 0;perspective:1200px;opacity:0;transform:translateY(20px);transition:all 0.8s var(--ease-out-expo)}
+        .flip-section.show{opacity:1;transform:translateY(0)}
+        .flip-hint{text-align:center;font-size:0.7rem;color:var(--text-muted);letter-spacing:2px;font-family:var(--font-display);margin-bottom:1rem}
+        .flipper{position:relative;width:100%;height:320px;transform-style:preserve-3d;transition:transform 0.8s var(--ease-spring);cursor:pointer}
+        .flipper.flipped{transform:rotateY(180deg)}
+        .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:24px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:3rem;text-align:center;overflow:hidden}
+        .flip-front{background:linear-gradient(135deg,rgba(248,81,73,0.08),var(--bg-secondary));border:1px solid rgba(248,81,73,0.2)}
+        .flip-back{background:linear-gradient(135deg,rgba(63,185,80,0.08),var(--bg-secondary));border:1px solid rgba(63,185,80,0.2);transform:rotateY(180deg)}
+        .flip-emoji{font-size:3rem;margin-bottom:1rem;filter:drop-shadow(0 0 20px rgba(255,255,255,0.2))}
+        .flip-title{font-family:var(--font-display);font-size:1rem;letter-spacing:3px;margin-bottom:1rem}
+        .flip-text{color:var(--text-secondary);font-size:1rem;line-height:1.8;max-width:500px;font-style:italic}
 
-        .share-btn-mini {
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            font-family: var(--font-display);
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
+        /* Download action */
+        .actions{display:flex;justify-content:center;gap:1rem;margin:2rem 0;opacity:0;transform:translateY(20px);transition:all 0.8s var(--ease-out-expo)}
+        .actions.show{opacity:1;transform:translateY(0)}
+        .action-btn{padding:1rem 2.5rem;border-radius:12px;font-family:var(--font-display);font-weight:700;font-size:0.75rem;letter-spacing:2px;cursor:pointer;transition:all 0.3s ease;text-decoration:none;border:none}
+        .btn-primary{background:linear-gradient(135deg,var(--accent),#00a5cc);color:var(--bg-void)}
+        .btn-primary:hover{box-shadow:0 0 30px var(--accent-glow);transform:scale(1.05)}
+        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-secondary)}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
 
-        .share-btn-mini:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
+        /* Flash overlay */
+        #flash{position:fixed;inset:0;background:#fff;z-index:20000;pointer-events:none;opacity:0;transition:opacity 0.6s ease}
 
-        /* Main Content */
-        .result-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 4rem 5%;
-            display: grid;
-            gap: 4rem;
-        }
-
-        /* Hero Stat */
-        .hero-stat {
-            text-align: center;
-            padding: 4rem 0;
-        }
-
-        .hero-stat h1 {
-            font-size: clamp(4rem, 15vw, 10rem);
-            line-height: 1;
-            margin-bottom: 1rem;
-            background: linear-gradient(to bottom, white, var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-stat p {
-            font-family: var(--font-display);
-            color: var(--text-secondary);
-            letter-spacing: 4px;
-        }
-
-        /* Profile Row */
-        .profile-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .avatar-wrapper {
-            position: relative;
-            width: 180px;
-            height: 180px;
-        }
-
-        .avatar-main {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--bg-secondary);
-            z-index: 2;
-            position: relative;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .avatar-main.loaded {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .neon-ring {
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--accent);
-            border-bottom-color: var(--secondary);
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .badge-personality {
-            background: var(--secondary);
-            color: var(--bg-primary);
-            padding: 0.5rem 1.5rem;
-            border-radius: 999px;
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 0.8rem;
-            box-shadow: 0 0 20px var(--secondary-glow);
-            transform: translateY(20px);
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .badge-personality.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            padding: 2rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-5px);
-        }
-
-        .stat-val {
-            font-family: var(--font-display);
-            font-size: 2.5rem;
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--accent);
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-        }
-
-        /* Language Bar */
-        .lang-section {
-            background: var(--bg-secondary);
-            padding: 3rem 2rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .lang-section h3 {
-            margin-bottom: 2rem;
-            font-size: 1rem;
-        }
-
-        .lang-bars {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .lang-row {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .lang-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            font-family: var(--font-display);
-        }
-
-        .bar-container {
-            width: 100%;
-            height: 12px;
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            width: 0;
-            transition: width 1.5s ease;
-        }
-
-        /* Activity Section */
-        .activity-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        .activity-card {
-            background: var(--bg-secondary);
-            padding: 2rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .clock-container {
-            width: 120px;
-            height: 120px;
-            position: relative;
-        }
-
-        .clock-svg {
-            transform: rotate(-90deg);
-        }
-
-        .clock-bg {
-            fill: none;
-            stroke: var(--bg-tertiary);
-            stroke-width: 10;
-        }
-
-        .clock-progress {
-            fill: none;
-            stroke: var(--accent);
-            stroke-width: 10;
-            stroke-dasharray: 314;
-            stroke-dashoffset: 314;
-            transition: stroke-dashoffset 2s ease;
-        }
-
-        .heatmap {
-            display: grid;
-            grid-template-columns: repeat(15, 1fr);
-            gap: 4px;
-            width: 100%;
-        }
-
-        .heat-cell {
-            aspect-ratio: 1;
-            background: var(--bg-tertiary);
-            border-radius: 2px;
-        }
-
-        /* Flip Card */
-        .flip-container {
-            perspective: 1000px;
-            width: 100%;
-            height: 400px;
-        }
-
-        .flipper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-        }
-
-        .flipper.flipped {
-            transform: rotateY(180deg);
-        }
-
-        .card-front, .card-back {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 3rem;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        .card-front {
-            background: linear-gradient(135deg, #2d0a0a, #0d1117);
-            border: 2px solid var(--danger);
-        }
-
-        .card-back {
-            background: linear-gradient(135deg, #2d260a, #0d1117);
-            border: 2px solid var(--warning);
-            transform: rotateY(180deg);
-        }
-
-        .particle-canvas-card {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .card-emoji { font-size: 4rem; margin-bottom: 1.5rem; z-index: 2; }
-        .card-title { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1rem; z-index: 2; }
-        .card-text { color: var(--text-secondary); font-size: 1.1rem; line-height: 1.6; z-index: 2; }
-
-        /* Action Buttons */
-        .actions {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-        }
-
-        .action-btn {
-            padding: 1.2rem 3rem;
-            border-radius: 12px;
-            font-family: var(--font-display);
-            font-weight: 800;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-        }
-
-        .download-btn {
-            background: var(--accent);
-            color: var(--bg-primary);
-        }
-
-        .download-btn:hover {
-            box-shadow: 0 0 30px var(--accent-glow);
-            transform: scale(1.05);
-        }
-
-        @media (max-width: 768px) {
-            .stats-grid, .activity-section { grid-template-columns: 1fr; }
-            .hero-stat h1 { font-size: 5rem; }
+        @media(max-width:768px){
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+            .info-row{grid-template-columns:1fr}
+            .heatmap-grid{grid-template-columns:repeat(13,1fr)}
         }
     </style>
 </head>
 <body>
 
-    <svg class="noise-overlay" xmlns="http://www.w3.org/2000/svg">
-        <filter id="noiseFilter">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
-        </filter>
-        <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
-    </svg>
+<div id="loading-screen">
+    <div class="loader-ring"></div>
+    <div class="loader-text">UNWRAPPING</div>
+    <div class="loader-sub" id="loader-status">Fetching your GitHub data...</div>
+</div>
 
-    <div id="flash-overlay"></div>
+<div id="error-screen">
+    <div class="err-icon">💀</div>
+    <div class="err-title">OOPS</div>
+    <div class="err-msg" id="err-msg">Something went wrong.</div>
+    <a href="index.html" class="err-btn">← TRY AGAIN</a>
+</div>
 
-    <div id="unwrapped-overlay">
-        <canvas id="explosion-canvas"></canvas>
-        <div class="gift-box" id="gift-box">🎁</div>
-    </div>
+<div id="flash"></div>
 
+<div id="app" style="display:none">
     <header class="top-bar">
-        <div class="user-pill">
-            <img src="https://github.com/torvalds.png" class="mini-avatar" alt="torvalds">
-            @torvalds
+        <div class="top-left">
+            <img class="top-avatar" id="top-avatar" src="" alt="">
+            <span class="top-user" id="top-user">@user</span>
         </div>
-        <button class="share-btn-mini">SHARE RESULT</button>
+        <div class="top-right">
+            <a href="index.html" class="top-btn">← HOME</a>
+            <button class="top-btn" id="dl-btn">📥 DOWNLOAD CARD</button>
+        </div>
     </header>
 
-    <main class="result-container">
-        <section class="hero-stat">
-            <h1 id="total-commits-hero">0</h1>
-            <p>TOTAL COMMITS IN 2024</p>
+    <main class="content">
+        <section class="hero-number" id="sec-hero">
+            <div class="hero-val" id="hero-val">0</div>
+            <div class="hero-label">TOTAL CONTRIBUTIONS THIS YEAR</div>
         </section>
 
-        <section class="profile-header">
-            <div class="avatar-wrapper">
-                <div class="neon-ring"></div>
-                <img src="https://github.com/torvalds.png" class="avatar-main" id="profile-avatar" alt="torvalds">
-            </div>
-            <div class="badge-personality" id="badge">KERNEL ARCHITECT</div>
+        <section class="profile" id="sec-profile">
+            <div class="avatar-ring"><img class="avatar-img" id="avatar-img" src="" alt=""></div>
+            <div class="profile-name" id="profile-name">@user</div>
+            <div class="profile-bio" id="profile-bio"></div>
+            <div class="badge" id="profile-badge"></div>
         </section>
 
-        <section class="stats-grid">
-            <div class="stat-card">
-                <span class="stat-val" id="val-prs">0</span>
-                <span class="stat-label">Pull Requests Merged</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-val" id="val-stars">0</span>
-                <span class="stat-label">Stars Earned</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-val" id="val-streak">0</span>
-                <span class="stat-label">Longest Daily Streak</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-val" id="val-repos">0</span>
-                <span class="stat-label">New Repositories</span>
-            </div>
+        <section class="stats-grid" id="sec-stats">
+            <div class="stat-card" id="sc-commits"><span class="stat-val" id="sv-commits">0</span><span class="stat-label">Commits</span></div>
+            <div class="stat-card" id="sc-prs"><span class="stat-val" id="sv-prs">0</span><span class="stat-label">Pull Requests</span></div>
+            <div class="stat-card" id="sc-stars"><span class="stat-val" id="sv-stars">0</span><span class="stat-label">Stars Earned</span></div>
+            <div class="stat-card" id="sc-repos"><span class="stat-val" id="sv-repos">0</span><span class="stat-label">Public Repos</span></div>
         </section>
 
-        <section class="lang-section">
-            <h3 class="stat-label">LANGUAGE DISTRIBUTION</h3>
-            <div class="lang-bars" id="lang-container">
-                <!-- Rows injected by JS -->
-            </div>
+        <section class="lang-section" id="sec-lang">
+            <div class="section-label">Language Distribution</div>
+            <div id="lang-container"></div>
         </section>
 
-        <section class="activity-section">
-            <div class="activity-card">
-                <h3 class="stat-label">MOST ACTIVE TIME</h3>
-                <div class="clock-container">
-                    <svg class="clock-svg" width="120" height="120">
-                        <circle class="clock-bg" cx="60" cy="60" r="50"></circle>
-                        <circle class="clock-progress" id="clock-arc" cx="60" cy="60" r="50"></circle>
-                    </svg>
-                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:var(--font-display);">2 AM</div>
-                </div>
-                <p style="color:var(--text-secondary); font-size:0.8rem;">The Night Owl Hours</p>
-            </div>
-            <div class="activity-card">
-                <h3 class="stat-label">COMMIT VELOCITY</h3>
-                <div class="heatmap" id="heatmap">
-                    <!-- Cells injected by JS -->
-                </div>
-                <p style="color:var(--text-secondary); font-size:0.8rem;">Peak Activity Patterns</p>
-            </div>
+        <section class="heat-section" id="sec-heat">
+            <div class="section-label">Contribution Heatmap</div>
+            <div class="heatmap-grid" id="heatmap"></div>
         </section>
 
-        <section class="flip-container">
+        <div class="info-row">
+            <div class="info-card" id="sec-streak">
+                <div class="section-label">🔥 Longest Streak</div>
+                <div class="info-big" id="streak-val">0</div>
+                <div class="info-sub">consecutive days</div>
+            </div>
+            <div class="info-card" id="sec-current">
+                <div class="section-label">⚡ Current Streak</div>
+                <div class="info-big" id="current-val">0</div>
+                <div class="info-sub">days and counting</div>
+            </div>
+        </div>
+
+        <section class="flip-section" id="sec-flip">
+            <div class="flip-hint">TAP TO FLIP</div>
             <div class="flipper" id="flipper">
-                <div class="card-front">
-                    <canvas id="fire-canvas" class="particle-canvas-card"></canvas>
-                    <div class="card-emoji">🔥</div>
-                    <div class="card-title">THE ROAST</div>
-                    <p class="card-text">"Your commit messages are just 'fixed' and your indentation looks like a game of Jenga. Linus would like a word."</p>
+                <div class="flip-face flip-front">
+                    <div class="flip-emoji">🔥</div>
+                    <div class="flip-title">THE ROAST</div>
+                    <p class="flip-text" id="roast-text">Loading...</p>
                 </div>
-                <div class="card-back">
-                    <canvas id="sparkle-canvas" class="particle-canvas-card"></canvas>
-                    <div class="card-emoji">✨</div>
-                    <div class="card-title">THE PRAISE</div>
-                    <p class="card-text">"An absolute legend. You move bits with the precision of a surgeon. Your code is the foundation of the digital world."</p>
+                <div class="flip-face flip-back">
+                    <div class="flip-emoji">✨</div>
+                    <div class="flip-title">THE PRAISE</div>
+                    <p class="flip-text" id="praise-text">Loading...</p>
                 </div>
             </div>
         </section>
 
-        <section class="actions">
-            <button class="action-btn download-btn" id="flash-btn">DOWNLOAD CARD</button>
+        <section class="actions" id="sec-actions">
+            <button class="action-btn btn-primary" id="card-dl-btn">📸 DOWNLOAD PNG CARD</button>
+            <a href="index.html" class="action-btn btn-outline">🔍 SEARCH ANOTHER</a>
         </section>
     </main>
+</div>
 
-    <script>
-        // Mock Data
-        const data = {
-            commits: 3452,
-            prs: 412,
-            stars: 12503,
-            streak: 84,
-            repos: 12,
-            langs: [
-                { name: 'C', percent: 85, color: '#555555' },
-                { name: 'Assembly', percent: 10, color: '#6E4C13' },
-                { name: 'C++', percent: 5, color: '#f34b7d' }
-            ]
-        };
+<script>
+const LANG_COLORS = {JavaScript:'#f7df1e',TypeScript:'#3178c6',Python:'#3776ab',Java:'#b07219','C++':'#f34b7d','C#':'#178600',C:'#555555',Ruby:'#701516',Go:'#00add8',Rust:'#dea584',PHP:'#4f5d95',Swift:'#fa7343',Kotlin:'#A97BFF',HTML:'#e34c26',CSS:'#563d7c',Shell:'#89e051',Vue:'#41b883',Dart:'#00B4AB',Assembly:'#6E4C13'};
 
-        // Explosion Canvas
-        const expCanvas = document.getElementById('explosion-canvas');
-        const expCtx = expCanvas.getContext('2d');
-        let particles = [];
+function getParam(k){return new URLSearchParams(location.search).get(k)}
 
-        function resizeExp() {
-            expCanvas.width = window.innerWidth;
-            expCanvas.height = window.innerHeight;
+function countUp(el, target, duration=1200){
+    const start=performance.now();
+    const fmt=n=>n.toLocaleString();
+    function tick(now){
+        const p=Math.min((now-start)/duration,1);
+        const ease=1-Math.pow(1-p,3);
+        el.textContent=fmt(Math.floor(target*ease));
+        if(p<1)requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+function staggerShow(selector, delay=100){
+    document.querySelectorAll(selector).forEach((el,i)=>{
+        setTimeout(()=>el.classList.add('show'), i*delay);
+    });
+}
+
+async function init(){
+    const username = getParam('user');
+    if(!username){location.href='index.html';return}
+
+    const status = document.getElementById('loader-status');
+    status.textContent = `Analyzing @${username}...`;
+
+    try{
+        const res = await fetch(`/wrapped/${encodeURIComponent(username)}`);
+        if(!res.ok){
+            const err = await res.json().catch(()=>({error:'Unknown error'}));
+            throw new Error(err.error || `HTTP ${res.status}`);
         }
+        const json = await res.json();
+        if(!json.success) throw new Error(json.error||'API error');
+        render(json.data);
+    }catch(e){
+        document.getElementById('loading-screen').classList.add('hide');
+        document.getElementById('err-msg').textContent = e.message;
+        document.getElementById('error-screen').classList.add('show');
+    }
+}
 
-        class Particle {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.vx = (Math.random() - 0.5) * 20;
-                this.vy = (Math.random() - 0.5) * 20;
-                this.size = Math.random() * 8 + 2;
-                this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
-                this.life = 1;
+function render(d){
+    // Populate static content
+    document.getElementById('top-avatar').src = d.avatarUrl;
+    document.getElementById('top-user').textContent = `@${d.username}`;
+    document.getElementById('avatar-img').src = d.avatarUrl;
+    document.getElementById('profile-name').textContent = `@${d.username}`;
+    document.getElementById('profile-bio').textContent = d.bio || '';
+    document.getElementById('profile-badge').textContent = d.personalityBadge || '🌟 Developer';
+    document.getElementById('roast-text').textContent = `"${d.roast}"`;
+    document.getElementById('praise-text').textContent = `"${d.praise}"`;
+    document.title = `@${d.username} | GitHub Wrapped`;
+
+    // Hide loader, show app
+    document.getElementById('loading-screen').classList.add('hide');
+    document.getElementById('app').style.display = 'block';
+
+    // Stagger animations
+    setTimeout(()=>{
+        document.getElementById('sec-hero').classList.add('show');
+        countUp(document.getElementById('hero-val'), d.totalCommits, 2000);
+    }, 300);
+
+    setTimeout(()=>{
+        document.getElementById('sec-profile').classList.add('show');
+    }, 600);
+
+    setTimeout(()=>{
+        const cards = document.querySelectorAll('.stat-card');
+        cards.forEach((c,i)=>setTimeout(()=>c.classList.add('show'), i*120));
+        countUp(document.getElementById('sv-commits'), d.totalCommits);
+        countUp(document.getElementById('sv-prs'), d.totalPRs);
+        countUp(document.getElementById('sv-stars'), d.totalStars);
+        countUp(document.getElementById('sv-repos'), d.publicRepos);
+    }, 900);
+
+    setTimeout(()=>{
+        document.getElementById('sec-lang').classList.add('show');
+        renderLangs(d.topLanguages);
+    }, 1300);
+
+    setTimeout(()=>{
+        document.getElementById('sec-heat').classList.add('show');
+        renderHeatmap();
+    }, 1600);
+
+    setTimeout(()=>{
+        document.getElementById('sec-streak').classList.add('show');
+        document.getElementById('sec-current').classList.add('show');
+        countUp(document.getElementById('streak-val'), d.longestStreak);
+        countUp(document.getElementById('current-val'), d.currentStreak);
+    }, 1900);
+
+    setTimeout(()=>{
+        document.getElementById('sec-flip').classList.add('show');
+    }, 2200);
+
+    setTimeout(()=>{
+        document.getElementById('sec-actions').classList.add('show');
+    }, 2500);
+
+    // Flip card
+    document.getElementById('flipper').addEventListener('click',()=>{
+        document.getElementById('flipper').classList.toggle('flipped');
+    });
+
+    // Download card
+    const dlHandler = ()=>{
+        const flash = document.getElementById('flash');
+        flash.style.transition='none'; flash.style.opacity='0.8';
+        setTimeout(()=>{flash.style.transition='opacity 0.6s ease';flash.style.opacity='0'},50);
+        window.open(`/card/${encodeURIComponent(d.username)}`,'_blank');
+    };
+    document.getElementById('dl-btn').addEventListener('click', dlHandler);
+    document.getElementById('card-dl-btn').addEventListener('click', dlHandler);
+}
+
+function renderLangs(langs){
+    const c = document.getElementById('lang-container');
+    if(!langs||!langs.length){c.innerHTML='<p style="color:var(--text-muted)">No language data</p>';return}
+    langs.forEach((l,i)=>{
+        const color = LANG_COLORS[l.name]||'#8b949e';
+        const row = document.createElement('div');
+        row.className='lang-row';
+        row.innerHTML=`<div class="lang-meta"><span class="lang-name"><span class="lang-dot" style="background:${color};box-shadow:0 0 8px ${color}60"></span>${l.name}</span><span class="lang-pct">${l.percentage}%</span></div><div class="lang-track"><div class="lang-fill" style="background:linear-gradient(90deg,${color},${color}99)"></div></div>`;
+        c.appendChild(row);
+        setTimeout(()=>{row.querySelector('.lang-fill').style.width=l.percentage+'%'},200+i*150);
+    });
+}
+
+function renderHeatmap(){
+    const grid = document.getElementById('heatmap');
+    const cells = window.innerWidth < 768 ? 52 : 104;
+    for(let i=0;i<cells;i++){
+        const cell=document.createElement('div');
+        cell.className='heat-cell';
+        grid.appendChild(cell);
+        const intensity = Math.random();
+        const delay = i * 15;
+        setTimeout(()=>{
+            if(intensity > 0.3){
+                const alpha = Math.min(intensity, 0.9);
+                cell.style.background=`rgba(63,185,80,${alpha})`;
+                cell.style.boxShadow=`0 0 ${alpha*8}px rgba(63,185,80,${alpha*0.5})`;
             }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += 0.2; // gravity
-                this.life -= 0.01;
-            }
-            draw() {
-                expCtx.globalAlpha = this.life;
-                expCtx.fillStyle = this.color;
-                expCtx.fillRect(this.x, this.y, this.size, this.size);
-            }
-        }
+        }, delay);
+    }
+}
 
-        function animateExp() {
-            expCtx.clearRect(0, 0, expCanvas.width, expCanvas.height);
-            particles.forEach((p, i) => {
-                p.update();
-                p.draw();
-                if (p.life <= 0) particles.splice(i, 1);
-            });
-            if (particles.length > 0) requestAnimationFrame(animateExp);
-        }
-
-        // Start Sequence
-        document.getElementById('gift-box').addEventListener('click', () => {
-            const rect = document.getElementById('gift-box').getBoundingClientRect();
-            for (let i = 0; i < 150; i++) {
-                particles.push(new Particle(rect.left + rect.width/2, rect.top + rect.height/2));
-            }
-            document.getElementById('gift-box').style.display = 'none';
-            animateExp();
-            setTimeout(() => {
-                document.getElementById('unwrapped-overlay').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('unwrapped-overlay').style.display = 'none';
-                    runAnimations();
-                }, 1000);
-            }, 500);
-        });
-
-        // Animations after reveal
-        function runAnimations() {
-            // Count up numbers
-            countTo('total-commits-hero', data.commits);
-            countTo('val-prs', data.prs);
-            countTo('val-stars', data.stars);
-            countTo('val-streak', data.streak);
-            countTo('val-repos', data.repos);
-
-            // Load Avatar
-            setTimeout(() => {
-                document.getElementById('profile-avatar').classList.add('loaded');
-                document.getElementById('badge').classList.add('show');
-            }, 500);
-
-            // Fill Bars
-            const container = document.getElementById('lang-container');
-            data.langs.forEach((l, i) => {
-                const row = document.createElement('div');
-                row.className = 'lang-row';
-                row.innerHTML = `
-                    <div class="lang-info"><span>${l.name}</span><span>${l.percent}%</span></div>
-                    <div class="bar-container"><div class="bar-fill" style="background:${l.color}; width:0%"></div></div>
-                `;
-                container.appendChild(row);
-                setTimeout(() => {
-                    row.querySelector('.bar-fill').style.width = l.percent + '%';
-                }, 200 + (i * 100));
-            });
-
-            // Heatmap
-            const heatmap = document.getElementById('heatmap');
-            for (let i = 0; i < 60; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'heat-cell';
-                heatmap.appendChild(cell);
-                setTimeout(() => {
-                    cell.style.background = `rgba(63, 185, 80, ${Math.random()})`;
-                    cell.style.boxShadow = `0 0 10px rgba(63, 185, 80, ${Math.random() * 0.5})`;
-                }, 1000 + (i * 20));
-            }
-
-            // Clock Arc
-            setTimeout(() => {
-                document.getElementById('clock-arc').style.strokeDashoffset = '78'; // Approx 75%
-            }, 1000);
-        }
-
-        function countTo(id, target) {
-            let current = 0;
-            const step = () => {
-                current += Math.ceil(target / 60);
-                if (current > target) current = target;
-                document.getElementById(id).innerText = current.toLocaleString();
-                if (current < target) requestAnimationFrame(step);
-            };
-            step();
-        }
-
-        // Card Flip
-        const flipper = document.getElementById('flipper');
-        flipper.addEventListener('click', () => {
-            flipper.classList.toggle('flipped');
-        });
-
-        // Flash Effect
-        document.getElementById('flash-btn').addEventListener('click', () => {
-            const flash = document.getElementById('flash-overlay');
-            flash.style.opacity = '1';
-            setTimeout(() => { flash.style.opacity = '0'; flash.style.transition = 'opacity 1s ease'; }, 50);
-        });
-
-        // Particles for cards
-        function initCardParticles(canvasId, color, count) {
-            const c = document.getElementById(canvasId);
-            const ctx = c.getContext('2d');
-            let pts = [];
-            
-            function resize() {
-                c.width = c.offsetWidth;
-                c.height = c.offsetHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
-
-            for (let i = 0; i < count; i++) {
-                pts.push({
-                    x: Math.random() * c.width,
-                    y: Math.random() * c.height,
-                    s: Math.random() * 2 + 1,
-                    v: Math.random() * 1 + 0.5
-                });
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, c.width, c.height);
-                ctx.fillStyle = color;
-                pts.forEach(p => {
-                    p.y -= p.v;
-                    if (p.y < 0) p.y = c.height;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                requestAnimationFrame(draw);
-            }
-            draw();
-        }
-
-        initCardParticles('fire-canvas', '#f8514944', 50);
-        initCardParticles('sparkle-canvas', '#d2992244', 50);
-
-        window.addEventListener('resize', resizeExp);
-        resizeExp();
-    </script>
+init();
+</script>
 </body>
 </html>

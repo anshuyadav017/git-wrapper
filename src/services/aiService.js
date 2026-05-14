@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-const callOpenRouter = async (messages, model = 'meta-llama/llama-2-70b-chat', temperature = 0.9) => {
+const callOpenRouter = async (messages, model = 'google/gemini-2.5-flash', temperature = 0.9) => {
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error('OpenRouter API key not configured');
   }
@@ -52,7 +52,7 @@ const generateRoast = async (stats) => {
   try {
     const roast = await callOpenRouter(
       [{ role: 'user', content: prompt }],
-      'meta-llama/llama-2-70b-chat',
+      'google/gemini-2.5-flash',
       1.2
     );
     return roast.trim() || getFallbackRoast(stats);
@@ -79,7 +79,7 @@ const generatePraise = async (stats) => {
   try {
     const praise = await callOpenRouter(
       [{ role: 'user', content: prompt }],
-      'meta-llama/llama-2-70b-chat',
+      'google/gemini-2.5-flash',
       0.7
     );
     return praise.trim() || getFallbackPraise(stats);
@@ -99,7 +99,7 @@ Top Language: ${stats.topLanguages[0]?.name || 'JavaScript'}`;
   try {
     const title = await callOpenRouter(
       [{ role: 'user', content: prompt }],
-      'mistral/mistral-7b-instruct',
+      'google/gemini-2.5-flash',
       0.8
     );
     return title.trim().slice(0, 50) || `🌟 ${stats.username}'s Code Odyssey`;
@@ -116,7 +116,7 @@ Commits: ${stats.totalCommits}, Streak: ${stats.longestStreak} days, Badge: ${st
   try {
     const description = await callOpenRouter(
       [{ role: 'user', content: prompt }],
-      'mistral/mistral-7b-instruct',
+      'google/gemini-2.5-flash',
       0.7
     );
     return description.trim().slice(0, 100) || 'An incredible year of coding and growth';
